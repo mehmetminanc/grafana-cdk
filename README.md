@@ -13,6 +13,7 @@ I have just started working on this and there is still work to be done:
 * Well, tests
 * More and non-trivial examples
 * Build & publish pipeline
+* Interface documentation
 
 For later:
 * Provide tooling to update a dashboard given a Grafana instance, in an idempotent way. I love that word. 

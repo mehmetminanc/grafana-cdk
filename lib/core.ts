@@ -36,16 +36,6 @@ export const ORANGE = new RGBA(237, 129, 40, 0.89);
 export const RED = new RGBA(245, 54, 54, 0.9);
 export const BLANK = new RGBA(0, 0, 0, 0.0);
 
-export const INDIVIDUAL = 'individual';
-export const CUMULATIVE = 'cumulative';
-export type ValueType = 'individual' | 'cumulative';
-
-export const NULL_CONNECTED = 'connected';
-export const NULL_AS_ZERO = 'null as zero';
-export const NULL_AS_NULL = 'null';
-
-export type NullPointModeType = "connected" | "null as zero" | "null";
-
 export const FLOT = 'flot';
 
 export const ABSOLUTE_TYPE = 'absolute';
@@ -76,7 +66,6 @@ export const LIGHT_STYLE = 'light';
 export type StyleType = 'dark' | 'light';
 
 export const UTC = 'utc';
-export type TimezoneType = 'utc' | 'browser';
 
 export const SCHEMA_VERSION = 12;
 
@@ -181,24 +170,6 @@ export const ALERTLIST_STATE_ALERTING = "alerting";
 export const SORT_ASC = 1;
 export const SORT_DESC = 2;
 export const SORT_IMPORTANCE = 3;
-
-// Template
-export const REFRESH_NEVER = 0;
-export const REFRESH_ON_DASHBOARD_LOAD = 1;
-export const REFRESH_ON_TIME_RANGE_CHANGE = 2;
-export const SHOW = 0;
-export const HIDE_LABEL = 1;
-export const HIDE_VARIABLE = 2;
-
-export const SORT_DISABLED = 0;
-export const SORT_ALPHA_ASC = 1;
-export const SORT_ALPHA_DESC = 2;
-export const SORT_NUMERIC_ASC = 3;
-export const SORT_NUMERIC_DESC = 4;
-export const SORT_ALPHA_IGNORE_CASE_ASC = 5;
-export const SORT_ALPHA_IGNORE_CASE_DESC = 6;
-
-export type SortOrderType = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 export const GAUGE_CALC_LAST = "last";
 export const GAUGE_CALC_FIRST = "first";
@@ -394,20 +365,28 @@ export class Target {
     }
 }
 
+export type ValueType = 'individual' | 'cumulative';
+
+export enum DisplaySortOrder {
+    SORT_ASC,
+    SORT_DESC,
+    SORT_IMPORTANCE
+}
+
 export interface TooltipProps {
     msResolution?: boolean;
     shared?: boolean;
-    sort?: SortOrderType;
+    sort?: DisplaySortOrder;
     valueType?: ValueType;
 }
 
 export class Tooltip {
     msResolution: boolean;
     shared: boolean;
-    sort: SortOrderType;
+    sort: DisplaySortOrder;
     value_type: ValueType;
 
-    constructor({msResolution = true, shared = true, sort = SORT_DISABLED, valueType = CUMULATIVE}: TooltipProps) {
+    constructor({msResolution = true, shared = true, sort = SORT_ASC, valueType = "cumulative"}: TooltipProps) {
         this.msResolution = msResolution;
         this.shared = shared;
         this.sort = sort;
@@ -508,7 +487,7 @@ export class YAxes {
 
 
 export interface RowProps {
-    panels?: Array<any>;
+    panels?: Array<Panel>;
     collapse?: boolean;
     editable?: boolean;
     height?: Pixels;
@@ -518,7 +497,7 @@ export interface RowProps {
 }
 
 export class Row {
-    panels: Array<any>; // FIXME: type - parent for all panels. known Graph.
+    panels: Array<Panel>;
     collapse: boolean;
     editable: boolean;
     height: Pixels;
@@ -540,7 +519,6 @@ export class Row {
 
 export class Annotations {
     list: Array<any>; // FIXME: type.
-
 
     constructor(list: Array<any>) {
         this.list = list;
@@ -642,14 +620,134 @@ export class ExternalLink {
     }
 }
 
+
+export enum TemplateRefreshMode {
+    REFRESH_NEVER,
+    REFRESH_ON_DASHBOARD_LOAD,
+    REFRESH_ON_TIME_RANGE_CHANGE
+}
+
+export enum TemplateShowMode {
+    SHOW,
+    HIDE_LABEL,
+    HIDE_VARIABLE
+}
+
+export enum TemplateSortMode {
+    SORT_DISABLED,
+    SORT_ALPHA_ASC,
+    SORT_ALPHA_DESC,
+    SORT_NUMERIC_ASC,
+    SORT_NUMERIC_DESC,
+    SORT_ALPHA_IGNORE_CASE_ASC,
+    SORT_ALPHA_IGNORE_CASE_DESC
+}
+
+export type TemplateType = "query" | "interval" | "datasource" | "custom" | "constant" | "adhoc";
+
+
+export interface TemplateProps {
+    name: string;
+    query: string;
+    _default?: string;
+    dataSource?: string;
+    label?: string;
+    allValue?: string;
+    includeAll?: boolean;
+    multi?: boolean;
+    options?: Array<TemplateOptions>;
+    regex?: string;
+    useTags?: boolean;
+    tagsQuery?: string;
+    tagValuesQuery?: string;
+    refresh?: TemplateRefreshMode;
+    type?: "query" | "interval" | "datasource" | "custom" | "constant" | "adhoc";
+    hide?: TemplateShowMode;
+    sort?: TemplateSortMode;
+}
+
+export interface TemplateOptions {
+    selected: boolean;
+    text: string;
+    value: string;
+}
+
 export class Template {
-    // FIXME: tough one.
+    name: string;
+    query: string;
+    current: any;
+    default?: string;
+    datasource?: string;
+    label?: string;
+    allValue?: string;
+    includeAll: boolean;
+    multi: boolean;
+    options: Array<TemplateOptions>;
+    regex?: string;
+    useTags: boolean;
+    tagsQuery?: string;
+    tagValuesQuery?: string;
+    refresh: TemplateRefreshMode;
+    type: TemplateType;
+    hide: TemplateShowMode;
+    sort: TemplateSortMode;
+
+    constructor({
+                    name, query, _default, dataSource, label, allValue, includeAll = false, multi = false,
+                    options = [], regex, useTags = false, tagsQuery, tagValuesQuery,
+                    refresh = TemplateRefreshMode.REFRESH_ON_DASHBOARD_LOAD, type = "query",
+                    hide = TemplateShowMode.SHOW, sort = TemplateSortMode.SORT_ALPHA_ASC
+                }: TemplateProps) {
+        this.name = name;
+        this.query = query;
+        this.default = _default;
+        this.datasource = dataSource;
+        this.label = label;
+        this.allValue = allValue;
+        this.includeAll = includeAll;
+        this.multi = multi;
+        this.options = options;
+        this.regex = regex;
+        this.useTags = useTags;
+        this.tagsQuery = tagsQuery;
+        this.tagValuesQuery = tagValuesQuery;
+        this.refresh = refresh;
+        this.type = type;
+        this.hide = hide;
+        this.sort = sort;
+
+        this._init()
+    }
+
+    private _init() {
+        if (this.type === "custom") {
+            if (this.options?.length === 0) {
+                this.query.split(",").forEach((value) => {
+                    let isDefault = value === this.default;
+                    let option = {selected: isDefault, text: value, value: value};
+                    this.options.push(option);
+
+                    if (isDefault) {
+                        this.current = option;
+                    }
+                })
+            } else {
+                this.current = this.options.filter(option => option.selected)[0];
+            }
+        } else {
+            this.current = {selected: this.default, text: this.default, value: this.default}
+        }
+    }
+}
+
+interface TemplatingProps {
+    list?: Array<Template>;
 }
 
 export class Templating {
     list: Array<Template>;
 
-    constructor(list: Array<Template>) {
+    constructor({list = []}: TemplatingProps) {
         this.list = list;
     }
 }
@@ -716,7 +814,6 @@ export function OutsideRange(from_value: number, to_value: number) {
 export function NoValue() {
     return new Evaluator(EVAL_NO_VALUE, [])
 }
-
 
 export class TimeRange {
     constructor(public from_time: string, public to_time: string) {
@@ -813,6 +910,8 @@ export class Alert {
     };
 }
 
+export type TimezoneType = "utc" | "browser";
+
 export interface DashboardProps {
     title: string;
     rows: Array<Row>;
@@ -864,8 +963,8 @@ export class Dashboard {
                     title, rows, annotations = new Annotations([]), description = "", editable = true,
                     gnetId = null, hideControls = false, id = null, inputs = [], links = [], refresh = DEFAULT_REFRESH,
                     schemaVersion = SCHEMA_VERSION, sharedCrosshair = false, style = DARK_STYLE, tags = [],
-                    templating = new Templating(), time = DEFAULT_TIME, timepicker = DEFAULT_TIME_PICKER,
-                    timezone = UTC, version = 0, uid = null
+                    templating = new Templating({}), time = DEFAULT_TIME, timepicker = DEFAULT_TIME_PICKER,
+                    timezone = "utc", version = 0, uid = null
                 }: DashboardProps) {
         this.title = title;
         this.rows = rows;
@@ -888,6 +987,35 @@ export class Dashboard {
         this.timezone = timezone;
         this.version = version;
         this.uid = uid;
+
+        this._init();
+    }
+
+    private _init() {
+        const ids: Set<number> =
+            new Set(this.rows
+                .flatMap(row => row.panels)
+                .map(panel => panel.id)
+                .filter(isNotNullOrUndefined));
+
+        function* generateId(): Generator<number, number, boolean> {
+            for (let i = 1; ; i++) {
+                if (ids.has(i)) {
+                    continue;
+                }
+                yield i;
+            }
+        }
+
+        let iter = generateId();
+
+        this.rows
+            .flatMap(row => row.panels)
+            .forEach(panel => {
+                if (panel.id === undefined || panel.id === null) {
+                    panel.id = iter.next().value;
+                }
+            });
     }
 
     toJSON = () => {
@@ -898,6 +1026,12 @@ export class Dashboard {
 }
 
 export type Link = ExternalLink | DashboardLink;
+export type NullPointMode = "connected" | "null as zero" | "null";
+
+export interface Panel {
+    type: string;
+    id?: number;
+}
 
 export interface GraphProps {
     title: string;
@@ -917,7 +1051,7 @@ export interface GraphProps {
     lineWidth?: number;
     links?: Array<Link>;
     minSpan?: number | null;
-    nullPointMode?: "connected" | "null as zero" | "null";
+    nullPointMode?: NullPointMode;
     percentage?: boolean;
     pointRadius?: number;
     points?: boolean | null;
@@ -954,7 +1088,7 @@ export class Graph {
     linewidth: number;
     links: Array<Link>;
     minSpan?: number | null;
-    nullPointMode: NullPointModeType;
+    nullPointMode: NullPointMode;
     percentage: boolean;
     pointradius: number;
     points: boolean | null;
@@ -976,7 +1110,7 @@ export class Graph {
     constructor({
                     title, targets, aliasColors = {}, bars = false, dataSource, description = null, editable = true,
                     error = false, fill = 1, grid = new Grid({}), id, isNew = true, legend = new Legend({}),
-                    lines = true, lineWidth = DEFAULT_LINE_WIDTH, links = [], minSpan = null, nullPointMode = NULL_CONNECTED,
+                    lines = true, lineWidth = DEFAULT_LINE_WIDTH, links = [], minSpan = null, nullPointMode = "connected",
                     percentage = false, pointRadius = DEFAULT_POINT_RADIUS, points = false, renderer = DEFAULT_RENDERER,
                     repeat = null, seriesOverrides = [], span, stack = false, steppedLine = false,
                     timeFrom = null, timeShift = null, tooltip = new Tooltip({}), transparent = false, xAxis = new XAxis({}),
