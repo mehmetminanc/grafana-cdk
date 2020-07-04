@@ -1,17 +1,14 @@
-import {
-    Alert,
-    AlertCondition,
-    Dashboard,
-    Graph, GreaterThan, OP_AND,
-    OPS_FORMAT,
-    Row, RTYPE_SUM,
-    SHORT_FORMAT,
-    Target, TimeRange,
-    YAxes,
-    YAxis
-} from "../lib/core";
+import {Target} from "../lib/target";
+import {YAxes, YAxis} from "../lib/axis";
+import {Row} from "../lib/row";
+import {GreaterThan} from "../lib/evaluator";
+import {TimeRange} from "../lib/timeRange";
+import {AlertCondition} from "../lib/alertCondition";
+import {Alert} from "../lib/alert";
+import {Dashboard} from "../lib/dashboard";
+import {Graph} from "../lib/panels/graph";
 
-let dashboard = new Dashboard(
+const dashboard = new Dashboard(
     {
         title: "Frontend Stats",
         rows: [new Row({
@@ -26,8 +23,8 @@ let dashboard = new Dashboard(
                             refId: "A"
                         })],
                         yAxes: new YAxes({
-                            left: new YAxis({format: OPS_FORMAT}),
-                            right: new YAxis({format: SHORT_FORMAT})
+                            left: new YAxis({format: 'ops'}),
+                            right: new YAxis({format: 'short'})
                         }),
                         alert: new Alert(
                             {
@@ -35,8 +32,8 @@ let dashboard = new Dashboard(
                                 message: "More than 5 QPS of 500s on Nginx for 5 minutes",
                                 conditions: [
                                     new AlertCondition({
-                                        operator: OP_AND,
-                                        reducerType: RTYPE_SUM,
+                                        operator: "and",
+                                        reducerType: "sum",
                                         target: new Target({
                                             expr: 'sum(irate(nginx_http_requests_total{job="default/frontend",status=~"5.."}[1m]))',
                                             legendFormat: "5xx",
@@ -55,4 +52,4 @@ let dashboard = new Dashboard(
     }
 );
 
-console.log(JSON.stringify(dashboard));
+console.log(JSON.stringify(dashboard, null, 4));

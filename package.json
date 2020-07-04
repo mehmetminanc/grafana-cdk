@@ -1,17 +1,19 @@
 {
   "name": "grafana-cdk",
   "version": "1.0.0",
-  "description": "",
+  "description": "Type-safe constructs for building Grafana dashboards in code",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "author":  {
+    "name": "Mehmet M. Inanc",
+    "email": "mehmetminanc+grafana@gmail.com"
+  },
+  "license": "Apache-2.0",
   "devDependencies": {
     "typescript": "^3.9.5"
   },
   "dependencies": {
-    "@types/reflect-metadata": "^0.1.0"
   }
 }
